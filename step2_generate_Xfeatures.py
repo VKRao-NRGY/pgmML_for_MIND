@@ -13,7 +13,7 @@ Representations are saved as .csv files with columns as features and rows as sam
 '''
 
 def calculate_representations(args):
-    os.chdir(os.getcwd() + '/datasets/')
+    os.chdir(os.getcwd() + '/datasets/')        ## Open relevant database with SMILES strings.
     DatasetA_Smiles_P = pd.read_csv("datasetA_imputed_all.csv")
     DatasetA_grouped = DatasetA_Smiles_P.groupby('Smiles').mean().reset_index()
     Dataset = pd.read_csv(args.dataset + '.csv')
@@ -112,5 +112,6 @@ if __name__ == '__main__':
     	help='Specify the filename without csv (datasetB.csv or datasetC.csv) within the dataset folder to compute the features of. This files should have a single column of SMILES Strings labeled with "Smiles"')        
 
     parsed_args = parser.parse_args()
+
 
     calculate_representations(parsed_args)

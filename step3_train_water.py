@@ -116,37 +116,60 @@ def train(args):
     else:
         print(f'✓ No missing values in target variable.')
 
+    # Load input features
+    try:
+        X_features = pd.read_csv(args.features)
+        print(f'✓ Loaded features: {X_features.shape}')
+    except FileNotFoundError:
+        print(f'ERROR: Feature file not found: {args.features}')
+        return
+
+    # Check if features need to be grouped by SMILES
+    # If features have more rows than grouped targets, we need to group features too
+    # This handles cases where the dataset has multiple measurements per polymer
+    if X_features.shape[0] != DatasetA_grouped.shape[0]:
+        print(f'⚠ Features ({X_features.shape[0]} rows) don\'t match grouped dataset ({DatasetA_grouped.shape[0]} rows)')
+        print(f'  Grouping features by SMILES to match...')
+
+        # Add SMILES column to features for grouping
+        if 'Smiles' in DatasetA_Smiles_P.columns:
+            X_features['Smiles'] = DatasetA_Smiles_P['Smiles'].values
+            # Group features by SMILES (take mean of features for each unique polymer)
+            # This averages feature values for all measurements of the same polymer
+            X_features = X_features.groupby('Smiles').mean().reset_index()
+            # Ensure order matches DatasetA_grouped and filter to only valid polymers
+            # This handles cases where some SMILES may be invalid or filtered out
+            X_features = X_features.set_index('Smiles').loc[DatasetA_grouped['Smiles']].reset_index()
+            # Drop the Smiles column to get back to numeric features only
+            X_features = X_features.drop('Smiles', axis=1)
+            print(f'✓ Grouped features by SMILES: {X_features.shape}')
+        else:
+            print('ERROR: Cannot group features - SMILES column not found in dataset.')
+            return
+
     # Normalize Y (standardize to mean=0, std=1)
     Y = np.array(Y)
     scaler = StandardScaler()
     Y = scaler.fit_transform(Y)
     print(f'✓ Standardized target variable (shape: {Y.shape})')
 
-    # Load input features
-    try:
-        X = pd.read_csv(args.features)
-        print(f'✓ Loaded features: {X.shape}')
-    except FileNotFoundError:
-        print(f'ERROR: Feature file not found: {args.features}')
-        return
-
     # Determine feature type from filename
     if 'desc' in args.features:
         feature_type = 'desc'
         # Normalize X for descriptors
-        X = np.array(X)
+        X = np.array(X_features)
         Xscaler = StandardScaler()
         X = Xscaler.fit_transform(X)
         print(f'✓ Using chemical descriptors (standardized)')
     elif 'fing' in args.features:
         feature_type = 'fing'
         # Fingerprints are already binary, no normalization needed
-        X = np.array(X)
+        X = np.array(X_features)
         print(f'✓ Using Morgan fingerprints (no standardization)')
     else:
         print('WARNING: Could not determine feature type from filename. Assuming fingerprints.')
         feature_type = 'fing'
-        X = np.array(X)
+        X = np.array(X_features)
 
     # Ensure X and Y have matching number of samples
     if X.shape[0] != Y.shape[0]:

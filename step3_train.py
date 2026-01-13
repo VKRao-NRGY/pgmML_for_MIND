@@ -31,11 +31,11 @@ Each .csv file contains columns as gas permeability in the order ['He','H2','O2'
 def train(args):
 
     #read in the training data
-    DatasetA_Smiles_P = pd.read_csv("datasets/datasetA_imputed_all.csv")
+    DatasetA_Smiles_P = pd.read_csv("datasets/dataset_Water_Permeability_RO.csv")
     DatasetA_grouped = DatasetA_Smiles_P.groupby('Smiles').mean().reset_index()
 
     if args.imputation == 'BLR':
-        Y = DatasetA_grouped.iloc[:,-12:-6]
+        Y = DatasetA_grouped.iloc[:,-1:-1]
     if args.imputation == 'ERT':
         Y = DatasetA_grouped.iloc[:,-6:]
     
@@ -45,14 +45,14 @@ def train(args):
     Y = scaler.fit_transform(Y)
 
     if args.features == 'desc':
-        X = pd.read_csv('datasets/datasetAX_desc.csv')
+        X = pd.read_csv('datasets/dataset_Water_Permeability_RO_X_fing.csv')
 
         #normalize X
         X = np.array(X)
         Xscaler = StandardScaler()
         X = Xscaler.fit_transform(X)
     if args.features == 'fing': 
-        X = pd.read_csv('datasets/datasetAX_fing.csv')
+        X = pd.read_csv('datasets/.csv')
         X = np.array(X)
 
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)

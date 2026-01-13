@@ -72,7 +72,7 @@ def calculate_representations(args):
 
         # filter input into the most popular 114 substructures
         Zero_Sum = (MY_finger_dataset_A == 0).astype(int).sum()
-        NumberOfZero = 325 #adjust this number based on the tolerance of how many substructures
+        NumberOfZero = 450 #adjust this number based on the tolerance of how many substructures
         print(len(Zero_Sum[Zero_Sum < NumberOfZero]))
         X_fingerprints = MY_finger_dataset_A[Zero_Sum[Zero_Sum < NumberOfZero].index]
         new_length = X_fingerprints.shape[1]

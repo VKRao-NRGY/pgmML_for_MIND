@@ -59,7 +59,7 @@ def calculate_representations(args):
 
         Corr_df = pd.DataFrame(unique_list).reset_index()
 
-        #construct dataset-A input
+        #construct dataset-A input aa
         MY_finger = []
         for polymer in fp_n:
             my_finger = [0] * len(unique_list)
